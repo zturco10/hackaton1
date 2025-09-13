@@ -16,8 +16,6 @@ El énfasis no está en pantallas ni frontends, sino en la **calidad del contrat
 
 Oreo quiere dejar de "mojar la galleta a ciegas" y empezar a **entender qué pasa en cada sucursal**: qué SKU lidera, cuándo hay picos de demanda y cómo evoluciona el ticket promedio. Para ello, busca un backend que reciba ventas, consolide métricas y pida a un **LLM** un **resumen corto y claro** que cualquier analista pueda leer en segundos. 🍪🥛
 
-Tu servicio será el motor de insights: **seguro** (JWT), **consistente** (JPA) y **probado** (testing mínimo). Si el Postman Flow "se la come" completa —login, seed de ventas, consultas y /summary—, ¡estás listo para producción… o al menos para un vaso grande de leche! 🚀
-
 ## Requerimientos Técnicos
 
 ### Tecnologías Obligatorias
