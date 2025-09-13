@@ -16,6 +16,43 @@ El énfasis no está en pantallas ni frontends, sino en la **calidad del contrat
 
 Oreo quiere dejar de "mojar la galleta a ciegas" y empezar a **entender qué pasa en cada sucursal**: qué SKU lidera, cuándo hay picos de demanda y cómo evoluciona el ticket promedio. Para ello, busca un backend que reciba ventas, consolide métricas y pida a un **LLM** un **resumen corto y claro** que cualquier analista pueda leer en segundos. 🍪🥛
 
+Tu servicio será el motor de insights: **seguro** (JWT), **consistente** (JPA) y **probado** (testing mínimo). Si el Postman Flow "se la come" completa —login, seed de ventas, consultas y /summary—, ¡estás listo para producción… o al menos para un vaso grande de leche! 🚀
+
+## 💡 ¿Por Qué Este Hackathon Es Tu Mejor Carta de Presentación?
+
+**Este proyecto no es solo un ejercicio académico - es tu portafolio estrella.** 🌟
+
+Imagina estar en una entrevista y poder decir: *"Desarrollé un sistema que integra autenticación JWT, procesamiento asíncrono, integración con LLMs, y envío automatizado de reportes. Todo en 2 horas, trabajando en equipo bajo presión."*
+
+**Lo que demuestras con este proyecto:**
+- ✅ Manejo de **arquitecturas modernas** (async, eventos, microservicios)
+- ✅ Integración con **IA/LLMs** (la skill más demandada del 2025)
+- ✅ **Seguridad** y autenticación empresarial
+- ✅ Trabajo con **APIs externas** y servicios de terceros
+- ✅ **Colaboración efectiva** bajo presión
+
+Este es el tipo de proyecto que los reclutadores buscan en GitHub. Es real, es complejo, y resuelve un problema de negocio tangible. 🎯
+
+## 🚀 Estrategia para el Éxito: Divide y Vencerás
+
+**¡Ustedes pueden con esto!** El secreto no está en que todos hagan todo, sino en la **comunicación y división inteligente del trabajo**.
+
+### Distribución Sugerida (5 personas):
+
+1. **El Arquitecto** 🏗️: Setup inicial, estructura del proyecto, configuración de Spring Boot
+2. **El Guardian** 🔐: JWT, Spring Security, roles y permisos
+3. **El Persistente** 💾: JPA, entidades, repositorios, queries
+4. **El Comunicador** 📡: Integración con GitHub Models y servicio de email
+5. **El Validador** ✅: Postman Collection, testing, documentación
+
+**Pro tip**: Los primeros 20 minutos son CRUCIALES. Úsenlos para:
+- Definir interfaces claras entre componentes
+- Acordar DTOs y contratos
+- Crear branches en Git para cada uno
+- Establecer un punto de integración a los 60 minutos
+
+**Recuerden**: La comunicación constante es clave. Un equipo que se comunica bien puede lograr más que 5 genios trabajando aislados. 💪
+
 ## Requerimientos Técnicos
 
 ### Tecnologías Obligatorias
@@ -26,6 +63,8 @@ Oreo quiere dejar de "mojar la galleta a ciegas" y empezar a **entender qué pas
 - Spring Data JPA
 - H2 o PostgreSQL (a elección)
 - Cliente HTTP o SDK para GitHub Models API
+- JavaMail o Spring Boot Mail para envío de correos
+- **@Async y @EventListener** para procesamiento asíncrono
 
 ### Variables de Entorno Requeridas
 
@@ -34,6 +73,11 @@ GITHUB_TOKEN=<tu_token_de_GitHub>
 GITHUB_MODELS_URL=<endpoint_REST_de_GitHub_Models>
 MODEL_ID=<id_del_modelo_del_Marketplace>
 JWT_SECRET=<clave_para_firmar_JWT>
+# Para envío de correos:
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=<tu_email@gmail.com>
+MAIL_PASSWORD=<app_password>
 # Si usas PostgreSQL:
 DB_URL=<jdbc_url>
 DB_USER=<usuario_db>
@@ -101,39 +145,61 @@ Cada usuario con `ROLE_BRANCH` debe tener una sucursal asignada al momento del r
 }
 ```
 
-### 3. Resumen Semanal con LLM
+### 3. Resumen Semanal ASÍNCRONO con LLM y Email
 
 | Método | Endpoint | Descripción | Roles Permitidos |
 |--------|----------|-------------|-----------------|
-| POST | `/sales/summary/weekly` | Generar resumen semanal usando GitHub Models | CENTRAL (cualquier branch), BRANCH (solo su branch) |
-| GET | `/sales/summary/history` | Ver historial de resúmenes generados | CENTRAL |
+| POST | `/sales/summary/weekly` | Solicitar generación asíncrona de resumen y envío por email | CENTRAL (cualquier branch), BRANCH (solo su branch) |
 
-**Request (opcional)** para `/sales/summary/weekly`:
+**Request** para `/sales/summary/weekly`:
 ```json
 {
   "from": "2025-09-01",
   "to": "2025-09-07",
-  "branch": "Miraflores"
+  "branch": "Miraflores",
+  "emailTo": "gerente@oreo.com"
 }
 ```
-*Si no se envía body, calcular automáticamente la última semana.*
+*Si no se envía `from` y `to`, calcular automáticamente la última semana.*
 *Usuarios BRANCH solo pueden generar resúmenes de su propia sucursal.*
+*El campo `emailTo` es obligatorio.*
 
-**Response esperado** (200):
+**Response INMEDIATA** (202 Accepted):
 ```json
 {
-  "summaryText": "Esta semana vendimos 1,250 unidades con ingresos de $4,800.50. El SKU estrella fue OREO_DOUBLE con 420 unidades. La sucursal Miraflores lideró las ventas.",
-  "range": {
-    "from": "2025-09-01",
-    "to": "2025-09-07",
-    "branch": "Miraflores"
-  },
-  "aggregates": {
-    "totalUnits": 1250,
-    "totalRevenue": 4800.50,
-    "topSku": "OREO_DOUBLE",
-    "topBranch": "Miraflores"
-  }
+  "requestId": "req_01K...",
+  "status": "PROCESSING",
+  "message": "Su solicitud de reporte está siendo procesada. Recibirá el resumen en gerente@oreo.com en unos momentos.",
+  "estimatedTime": "30-60 segundos",
+  "requestedAt": "2025-09-12T18:15:00Z"
+}
+```
+
+### 📧 Implementación Asíncrona Requerida
+
+**Este es el corazón del ejercicio**: Implementar procesamiento **ASÍNCRONO** usando las herramientas de Spring que hemos estudiado.
+
+**Flujo requerido**:
+
+1. **Controller** recibe la petición y retorna inmediatamente 202 Accepted
+2. **Evento** `ReportRequestedEvent` se publica con `ApplicationEventPublisher`
+3. **Listener** con `@EventListener` y `@Async` procesa en background:
+   - Calcula agregados de ventas
+   - Consulta GitHub Models API
+   - Genera el resumen
+   - Envía el email
+4. **Email** llega al destinatario con el resumen
+
+**Ejemplo de implementación**:
+```java
+// En el Service
+@Async
+@EventListener
+public void handleReportRequest(ReportRequestedEvent event) {
+    // 1. Calcular agregados
+    // 2. Llamar a GitHub Models
+    // 3. Enviar email
+    // 4. Opcionalmente, actualizar status en BD
 }
 ```
 
@@ -149,45 +215,84 @@ Cada usuario con `ROLE_BRANCH` debe tener una sucursal asignada al momento del r
 
 **¡Para los valientes que quieran puntos extra!** 🏆
 
-### El Desafío
+### El Desafío Premium
 
-¿Qué pasaría si los gerentes de Oreo no solo quieren leer el resumen, sino también **descargarlo como PDF** con **gráficos incluidos**? 📊📄
+Ya estás enviando resúmenes por email de manera asíncrona... ¿pero qué tal si los gerentes quieren algo más profesional? 📊📄
+
+**El reto**: En lugar de enviar un email con texto plano, envía un **email HTML profesional** con:
+- El resumen formateado elegantemente
+- **Gráficos embebidos** (bar charts, pie charts)
+- **PDF adjunto** con el reporte completo
 
 ### Endpoints Bonus
 
 | Método | Endpoint | Descripción | Roles Permitidos |
 |--------|----------|-------------|-----------------|
-| POST | `/sales/report/pdf` | Generar reporte PDF con resumen y gráficos | CENTRAL, BRANCH |
-| POST | `/sales/charts/generate` | Generar gráficos de ventas (bar, pie, line) | CENTRAL, BRANCH |
+| POST | `/sales/summary/weekly/premium` | Solicitar reporte premium asíncrono | CENTRAL, BRANCH |
 
-### Pistas para el Éxito 🕵️‍♂️
-
-- **Pista #1**: No todo tiene que hacerse en Java... ¿qué tal si llamas a otra API especializada en generar gráficos? 🤔
-- **Pista #2**: Servicios como **QuickChart.io**, **Chart.js Image**, o **Google Charts API** pueden ser tus mejores amigos
-- **Pista #3**: Para PDFs, bibliotecas como **iText**, **Apache PDFBox** o servicios externos como **PDFShift** pueden salvarte
-- **Pista #4**: El LLM puede generar no solo texto, sino también **código** para los gráficos (piensa en Chart.js config o SVG)
-- **Pista #5**: Recuerda que puedes pedirle al LLM que te devuelva los datos en formato JSON estructurado para facilitar la generación de gráficos
-
-### Ejemplo de Response para PDF
-
+**Request**:
 ```json
 {
-  "reportId": "r_01K...",
-  "downloadUrl": "/reports/r_01K.pdf",
-  "expiresIn": 3600,
-  "preview": {
-    "summaryText": "Esta semana fue histórica...",
-    "chartsIncluded": ["sales_by_sku", "revenue_trend", "branch_comparison"],
-    "pages": 3
-  }
+  "from": "2025-09-01",
+  "to": "2025-09-07",
+  "branch": "Miraflores",
+  "emailTo": "gerente@oreo.com",
+  "format": "PREMIUM",
+  "includeCharts": true,
+  "attachPdf": true
 }
+```
+
+**Response inmediata** (202 Accepted):
+```json
+{
+  "requestId": "req_premium_01K...",
+  "status": "PROCESSING",
+  "message": "Su reporte premium está siendo generado. Incluirá gráficos y PDF adjunto.",
+  "estimatedTime": "60-90 segundos",
+  "features": ["HTML_FORMAT", "CHARTS", "PDF_ATTACHMENT"]
+}
+```
+
+### Pistas para el Email Premium 🕵️‍♂️
+
+- **Pista #1**: Para gráficos en emails, genera URLs de imágenes con servicios como **QuickChart.io** e insértalas como `<img src="...">`
+- **Pista #2**: El LLM puede generar configuraciones de Chart.js que luego conviertes a URLs de QuickChart
+- **Pista #3**: Para el PDF, considera **iText** o **Apache PDFBox** en Java
+- **Pista #4**: Spring Boot Mail soporta HTML y attachments nativamente
+- **Pista #5**: Todo esto también debe ser asíncrono - ¡más razón para usar eventos!
+
+### Ejemplo de Email HTML (simplificado)
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .header { background: #6B46C1; color: white; padding: 20px; }
+        .metric { display: inline-block; margin: 10px; padding: 15px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍪 Reporte Semanal Oreo</h1>
+    </div>
+    <div class="content">
+        <p>Esta semana vendimos <strong>1,250 unidades</strong>...</p>
+        <div class="metric">
+            <h3>Total Revenue</h3>
+            <p>$4,800.50</p>
+        </div>
+        <img src="https://quickchart.io/chart?c={type:'bar',data:{...}}" />
+    </div>
+</body>
+</html>
 ```
 
 ### Criterios de Evaluación del Reto
 
-- **+5 puntos**: Generar PDF básico con el resumen
-- **+10 puntos**: Incluir al menos un gráfico en el PDF
-- **+15 puntos**: PDF completo con múltiples gráficos, tabla de datos y formato profesional
+- **+5 puntos**: Email HTML con formato profesional
+- **+10 puntos**: Incluir al menos un gráfico embebido en el email
+- **+15 puntos**: Email HTML + múltiples gráficos + PDF adjunto con formato profesional
 
 **Nota**: Este reto es OPCIONAL. Los equipos que lo intenten y fallen no serán penalizados. ¡Es puro upside! 🚀
 
@@ -206,8 +311,8 @@ Cada usuario con `ROLE_BRANCH` debe tener una sucursal asignada al momento del r
 {
   "model": "${MODEL_ID}",
   "messages": [
-    {"role": "system", "content": "Eres un analista que escribe resúmenes breves y claros."},
-    {"role": "user", "content": "Con estos datos: totalUnits=1250, totalRevenue=4800.50, topSku=OREO_DOUBLE, topBranch=Miraflores. Devuelve un resumen ≤120 palabras."}
+    {"role": "system", "content": "Eres un analista que escribe resúmenes breves y claros para emails corporativos."},
+    {"role": "user", "content": "Con estos datos: totalUnits=1250, totalRevenue=4800.50, topSku=OREO_DOUBLE, topBranch=Miraflores. Devuelve un resumen ≤120 palabras para enviar por email."}
   ],
   "max_tokens": 200
 }
@@ -217,6 +322,10 @@ Cada usuario con `ROLE_BRANCH` debe tener una sucursal asignada al momento del r
    - Máximo 120 palabras
    - Debe mencionar al menos uno: unidades totales, SKU top, sucursal top, o total recaudado
    - En español, claro y sin alucinaciones
+
+4. **Enviar por email** (de manera asíncrona):
+   - Subject: "Reporte Semanal Oreo - [fecha_desde] a [fecha_hasta]"
+   - Body: El summaryText generado + los aggregates principales
 
 ## Manejo de Errores
 
@@ -232,6 +341,7 @@ Formato estándar para todos los errores:
 
 Códigos HTTP esperados:
 - 201: Recurso creado
+- 202: Accepted (para procesamiento asíncrono)
 - 200: OK
 - 204: Sin contenido (cuando no hay ventas en el rango)
 - 400: Validación fallida
@@ -239,7 +349,7 @@ Códigos HTTP esperados:
 - 403: Sin permisos (intentando acceder a datos de otra sucursal)
 - 404: Recurso no encontrado
 - 409: Conflicto (username/email ya existe)
-- 503: Servicio no disponible (LLM caído)
+- 503: Servicio no disponible (LLM caído o servicio de email no disponible)
 
 ## Validación con Postman Flow
 
@@ -252,7 +362,7 @@ La colección ejecutará esta secuencia:
 5. **Crear 5 ventas (con CENTRAL)** → Assert 201 cada una (diferentes sucursales)
 6. **Listar todas las ventas (con CENTRAL)** → Assert 200, lista con todas
 7. **Listar ventas (con BRANCH)** → Assert 200, solo ventas de Miraflores
-8. **Generar resumen LLM (con BRANCH)** → Assert 200, solo datos de Miraflores
+8. **Solicitar resumen asíncrono (con BRANCH)** → Assert 202, requestId presente
 9. **Intentar crear venta otra sucursal (con BRANCH)** → Assert 403 Forbidden
 10. **Eliminar venta (con CENTRAL)** → Assert 204
 
@@ -273,31 +383,37 @@ La colección ejecutará esta secuencia:
 2. **Postman Collection** (archivo .json) en el root del repositorio
 3. **README.md** con:
    - Instrucciones para ejecutar el proyecto
-   - Variables de entorno necesarias
+   - Variables de entorno necesarias (incluidas las de email)
    - Cómo importar y ejecutar la colección de Postman
-   - (Si intentaste el reto) Documentación de los endpoints bonus
+   - Explicación de la implementación asíncrona
+   - (Si intentaste el reto) Documentación del endpoint premium
 
 ## Criterios de Evaluación
 
 | Criterio | Peso | Descripción |
 |----------|------|-------------|
-| **Funcionalidad** | 60% | Auth con roles (15%), CRUD ventas con permisos por sucursal (25%), Resumen LLM operativo (20%) |
-| **Calidad de Código** | 20% | Capas claras, DTOs, validaciones, manejo de errores |
+| **Funcionalidad** | 60% | Auth con roles (15%), CRUD ventas con permisos (20%), Resumen asíncrono + Email (25%) |
+| **Calidad de Código** | 20% | Capas claras, DTOs, validaciones, manejo de errores, **uso correcto de @Async** |
 | **Testing** | 10% | Tests unitarios mínimos |
 | **Postman Collection** | 10% | Collection funcional que valide todo el flow con diferentes roles |
-| **Reto Bonus** | +15% máx | Generación de PDF y/o gráficos (opcional) |
+| **Reto Bonus** | +15% máx | Email HTML premium con gráficos y PDF (opcional) |
 
 ## Observaciones Adicionales
 
+- **CRÍTICO**: El procesamiento del resumen DEBE ser asíncrono usando `@Async` y eventos
+- Habilita async en tu aplicación con `@EnableAsync`
 - El prompt al LLM debe ser **corto y explícito** con los números agregados
 - Si usas H2, activa la consola en modo dev para debugging
-- **NUNCA** subas tokens o secretos al repositorio
+- **NUNCA** subas tokens o secretos al repositorio (especialmente passwords de email)
 - El resumen debe reflejar los datos reales (no inventar información)
-- Maneja las fallas del LLM con 503 y mensaje claro al usuario
+- Maneja las fallas del LLM y del servicio de email con 503 y mensaje claro
 - Los usuarios BRANCH solo ven/modifican datos de su sucursal asignada
-- El reto bonus es completamente opcional - ¡pero los puntos extra pueden hacer la diferencia! 🎯
+- Para testing local de emails, considera usar **MailDev** o **Mailtrap**
+- **Recuerden**: La comunicación del equipo es más importante que el código individual
 
 ¡Que la galleta esté de tu lado! 🍪✨
+
+**Ustedes pueden con esto. Confíen en sus habilidades, comuníquense, y dividan el trabajo inteligentemente. Este proyecto puede ser la estrella de su portafolio. ¡A por ello!** 💪🚀
 
 Con mucho cariño desde California,
 
