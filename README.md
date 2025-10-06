@@ -9,7 +9,7 @@ El énfasis no está en pantallas ni frontends, sino en la **calidad del contrat
 ## Duración y Formato
 
 - **Tiempo**: 2 horas
-- **Equipos**: Grupos de 4 o 5 estudiantes  
+- **Equipos**: Grupos de 4 o 5 estudiantes
 - **Recursos**: Uso de IA permitido, documentación y material de Internet
 
 ## Contexto del Negocio
@@ -57,7 +57,7 @@ Este es el tipo de proyecto que los reclutadores buscan en GitHub. Es real, es c
 
 ### Tecnologías Obligatorias
 
-- Java 17+
+- Java 21+
 - Spring Boot 3.x
 - Spring Security con JWT
 - Spring Data JPA
@@ -211,6 +211,58 @@ public void handleReportRequest(ReportRequestedEvent event) {
 | GET | `/users/{id}` | Ver detalle de usuario | CENTRAL |
 | DELETE | `/users/{id}` | Eliminar usuario | CENTRAL |
 
+### 5. Requerimiento de Testing Unitario
+
+**OBLIGATORIO**: Implementar tests unitarios para el **servicio de cálculo de agregados de ventas** (SalesAggregationService o similar).
+
+### Tests Requeridos
+
+Debes implementar **mínimo 5 test cases** que cubran:
+
+1. **Test de agregados con datos válidos**: Verificar que se calculen correctamente `totalUnits`, `totalRevenue`, `topSku` y `topBranch` con un dataset conocido
+2. **Test con lista vacía**: Verificar comportamiento cuando no hay ventas en el rango de fechas
+3. **Test de filtrado por sucursal**: Verificar que solo considere ventas de la sucursal especificada (para usuarios BRANCH)
+4. **Test de filtrado por fechas**: Verificar que solo considere ventas dentro del rango de fechas especificado
+5. **Test de cálculo de SKU top**: Verificar que identifique correctamente el SKU más vendido cuando hay empates
+
+### Ejemplo de Test Esperado
+
+```java
+@ExtendWith(MockitoExtension.class)
+class SalesAggregationServiceTest {
+
+    @Mock
+    private SalesRepository salesRepository;
+
+    @InjectMocks
+    private SalesAggregationService salesAggregationService;
+
+    @Test
+    void shouldCalculateCorrectAggregatesWithValidData() {
+        // Given
+        List<Sale> mockSales = List.of(
+            createSale("OREO_CLASSIC", 10, 1.99, "Miraflores"),
+            createSale("OREO_DOUBLE", 5, 2.49, "San Isidro"),
+            createSale("OREO_CLASSIC", 15, 1.99, "Miraflores")
+        );
+        when(salesRepository.findByDateRange(any(), any())).thenReturn(mockSales);
+
+        // When
+        SalesAggregates result = salesAggregationService.calculateAggregates(
+            LocalDate.now().minusDays(7), LocalDate.now(), null
+        );
+
+        // Then
+        assertThat(result.getTotalUnits()).isEqualTo(30);
+        assertThat(result.getTotalRevenue()).isEqualTo(42.43);
+        assertThat(result.getTopSku()).isEqualTo("OREO_CLASSIC");
+        assertThat(result.getTopBranch()).isEqualTo("Miraflores");
+    }
+
+    // ... más tests
+}
+```
+
 ## 🎯 RETO EXTRA: Carta Mágica de Puntos Bonus 🪄
 
 **¡Para los valientes que quieran puntos extra!** 🏆
@@ -290,19 +342,27 @@ Ya estás enviando resúmenes por email de manera asíncrona... ¿pero qué tal 
 
 ### Criterios de Evaluación del Reto
 
-- **+5 puntos**: Email HTML con formato profesional
-- **+10 puntos**: Incluir al menos un gráfico embebido en el email
-- **+15 puntos**: Email HTML + múltiples gráficos + PDF adjunto con formato profesional
+- **+3 puntos**: Email HTML con formato profesional
+- **+5 puntos**: Incluir al menos un gráfico embebido en el email
+- **+10 puntos**: Email HTML + múltiples gráficos + PDF adjunto con formato profesional
 
-**Nota**: Este reto es OPCIONAL. Los equipos que lo intenten y fallen no serán penalizados. ¡Es puro upside! 🚀
+**Nota**: Este reto es OPCIONAL y los puntos obtenidos se sumarán a su **Hackathon 0**. Los equipos que lo intenten y fallen no serán penalizados. ¡Es puro upside! 🚀
 
 ## Integración con GitHub Models
+
+### Documentación y Setup
+
+Para usar GitHub Models en tu proyecto, necesitarás:
+
+1. **Documentación oficial**: [GitHub Models REST API](https://docs.github.com/en/github-models/use-github-models/prototyping-with-ai-models#experimenting-with-ai-models-using-the-api)
+2. **Token de acceso**: Crear un Personal Access Token con permisos de `model` en tu cuenta de GitHub
+3. **Modelo recomendado para esta hackaton**: `OpenAI gpt-5-mini`
 
 ### Proceso Requerido
 
 1. **Calcular agregados** de las ventas:
    - totalUnits
-   - totalRevenue  
+   - totalRevenue
    - topSku (el más vendido por unidades)
    - topBranch (sucursal con más ventas)
 
@@ -382,21 +442,25 @@ La colección ejecutará esta secuencia:
 1. **Código fuente** completo en un repositorio público de GitHub
 2. **Postman Collection** (archivo .json) en el root del repositorio
 3. **README.md** con:
+   - **Información del equipo**: Nombres completos y códigos UTEC de todos los integrantes
    - Instrucciones para ejecutar el proyecto
-   - Variables de entorno necesarias (incluidas las de email)
-   - Cómo importar y ejecutar la colección de Postman
+   - Instrucciones para correr el Postman workflow 
    - Explicación de la implementación asíncrona
    - (Si intentaste el reto) Documentación del endpoint premium
+4. **Variables de entorno**: Entregar por Canvas en formato texto las variables necesarias para ejecutar el proyecto
 
 ## Criterios de Evaluación
 
-| Criterio | Peso | Descripción |
-|----------|------|-------------|
-| **Funcionalidad** | 60% | Auth con roles (15%), CRUD ventas con permisos (20%), Resumen asíncrono + Email (25%) |
-| **Calidad de Código** | 20% | Capas claras, DTOs, validaciones, manejo de errores, **uso correcto de @Async** |
-| **Testing** | 10% | Tests unitarios mínimos |
-| **Postman Collection** | 10% | Collection funcional que valide todo el flow con diferentes roles |
-| **Reto Bonus** | +15% máx | Email HTML premium con gráficos y PDF (opcional) |
+**Sistema de Evaluación Todo o Nada:**
+- ✅ **20 puntos**: Si completan todas las funcionalidades principales:
+  - Autenticación JWT con roles
+  - CRUD de ventas con permisos por sucursal
+  - Resumen asíncrono con email
+  - Testing unitario del servicio de agregados (mínimo 5 tests)
+  - Postman Collection funcional
+- ❌ **0 puntos**: Si no completan alguna de las funcionalidades principales
+
+**El proyecto debe funcionar completamente end-to-end** para obtener los puntos. No hay evaluación parcial.
 
 ## Observaciones Adicionales
 
@@ -417,5 +481,5 @@ La colección ejecutará esta secuencia:
 
 Con mucho cariño desde California,
 
-**Gabriel Romero**  
+**Gabriel Romero**
 ❤️
