@@ -2,6 +2,8 @@
 
 ## Descripción General
 
+¿A quién no le gusta meter una Oreo 🍪 en un vaso con leche 🥛? 
+
 La fábrica de **Oreo** está por lanzar un piloto con UTEC para transformar sus datos de ventas en **insights accionables**. Tu misión es construir un **backend** sencillo y sólido que permita registrar ventas y, a partir de esos datos, **generar resúmenes automáticos** en lenguaje natural usando **GitHub Models** (vía GitHub Marketplace).
 
 El énfasis no está en pantallas ni frontends, sino en la **calidad del contrato de API**, autenticación básica, persistencia, pruebas mínimas y un endpoint de **insights** que consulte un LLM. La validación se hará ejecutando un **Postman Flow** end-to-end sobre tu backend. 🥛🤖
