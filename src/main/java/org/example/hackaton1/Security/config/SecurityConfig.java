@@ -50,13 +50,13 @@ public class SecurityConfig {
 
     /**
      * Constructor que inyecta las dependencias necesarias
-     * 
+     *
      * @param jwtAuthenticationFilter Filtro para validación de JWT
      * @param userDetailsService Servicio para cargar usuarios
      */
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                         UserDetailsServiceImpl userDetailsService) {
+                          UserDetailsServiceImpl userDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userDetailsService = userDetailsService;
     }
@@ -94,7 +94,7 @@ public class SecurityConfig {
     /**
      * Configuración de CORS (Cross-Origin Resource Sharing)
      * Permite que el frontend (React, Angular, etc.) acceda al backend desde otros puertos/dominios
-     * 
+     *
      * @return CorsConfigurationSource configuración de CORS
      */
     @Bean
@@ -114,27 +114,27 @@ public class SecurityConfig {
     /**
      * Bean que configura el proveedor de autenticación
      * Define cómo Spring Security debe validar las credenciales de usuario
-     * 
+     *
      * @return AuthenticationProvider proveedor configurado
      */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         // DaoAuthenticationProvider: valida contra una base de datos
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        
+
         // Establece el servicio que carga los detalles del usuario
         provider.setUserDetailsService(userDetailsService);
-        
+
         // Establece el encoder para verificar contraseñas
         provider.setPasswordEncoder(new BCryptPasswordEncoder());
-        
+
         return provider;
     }
 
     /**
      * Bean que proporciona el AuthenticationManager
      * Componente central que coordina la autenticación en Spring Security
-     * 
+     *
      * @param config Configuración de autenticación de Spring
      * @return AuthenticationManager manager configurado
      */
@@ -147,7 +147,7 @@ public class SecurityConfig {
     /**
      * Bean para executor de tareas (nombrado específicamente)
      * Evita conflictos con el asyncTaskExecutor definido en AsyncConfig
-     * 
+     *
      * @return TaskExecutor executor simple para tareas
      */
     @Bean(name = "securityTaskExecutor")
@@ -159,7 +159,7 @@ public class SecurityConfig {
     /**
      * Bean que define la jerarquía de roles en el sistema
      * Los roles superiores heredan permisos de roles inferiores
-     * 
+     *
      * @return RoleHierarchy jerarquía configurada
      */
     @Bean
@@ -167,14 +167,14 @@ public class SecurityConfig {
         RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
         // Jerarquía: ADMINISTRADOR > ENCARGADO_LOCAL > CLIENTE > REPARTIDOR
         // Significa que ADMINISTRADOR puede hacer todo lo que pueden hacer los demás roles
-        hierarchy.setHierarchy("ADMINISTRADOR > ENCARGADO_LOCAL > CLIENTE > REPARTIDOR");
+        hierarchy.setHierarchy("CENTRAL > BRANCH");
         return hierarchy;
     }
 
     /**
      * Bean que configura el handler para expresiones de seguridad en métodos
      * Permite usar la jerarquía de roles en anotaciones como @PreAuthorize
-     * 
+     *
      * @param roleHierarchy Jerarquía de roles definida arriba
      * @return MethodSecurityExpressionHandler handler configurado
      */
@@ -183,13 +183,13 @@ public class SecurityConfig {
             RoleHierarchy roleHierarchy) {
         DefaultMethodSecurityExpressionHandler handler =
                 new DefaultMethodSecurityExpressionHandler();
-        
+
         // Establece la jerarquía de roles
         handler.setRoleHierarchy(roleHierarchy);
-        
+
         // Remueve el prefijo "ROLE_" por defecto (usamos nombres directos como "CLIENTE")
         handler.setDefaultRolePrefix("");
-        
+
         return handler;
     }
 }

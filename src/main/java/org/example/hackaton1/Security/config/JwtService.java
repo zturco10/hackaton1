@@ -30,62 +30,53 @@ public class JwtService {
     /**
      * Método privado que construye la clave de firma segura
      * Convierte la clave secreta en string a una clave HMAC-SHA adecuada para JWT
-     * 
+     *
      * @return Key objeto clave para firmar/verificar tokens JWT
      */
     private Key getSigningKey() {
-        byte[] keyBytes = jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        if (keyBytes.length < 32) {
-            throw new IllegalStateException("JWT secret demasiado corto. Debe ser >= 32 bytes");
-        }
-        return Keys.hmacShaKeyFor(keyBytes);
+        // Convierte la clave secreta en bytes y crea una clave HMAC-SHA
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
-
 
     /**
      * Genera un token JWT completo basado en los datos del usuario
      * El token incluye información básica del usuario y tiempo de expiración
-     * 
+     *
      * @param user Usuario para el cual generar el token
      * @return String token JWT firmado y listo para usar
      * @throws IllegalArgumentException si el usuario o campos requeridos son nulos
      */
     public String generateToken(Usuario user) {
         // Validación exhaustiva para evitar errores durante la generación del token
-        // antes: if (user == null || user.getNumero() == null | user.getId() == null || ...)
-        if (user == null
-                || user.getNumero() == null
-                || user.getId() == null
-                || user.getNombre() == null
-                || user.getRol() == null) {
+        if (user == null || user.getEmail() == null || user.getId() == null ||
+                user.getUsername() == null || user.getRol() == null) {
             throw new IllegalArgumentException("Usuario o campos requeridos nulos para generar el token");
         }
-
 
         // Construcción del token JWT usando el patrón Builder
         return Jwts.builder()
                 // Subject: identificador principal del usuario (número de teléfono)
-                .setSubject(user.getNumero())
-                
+                .setSubject(user.getEmail())
+
                 // Claims personalizados: información adicional del usuario
                 .claim("userId", user.getId())           // ID único del usuario
-                .claim("nombre", user.getNombre())       // Nombre del usuario
+                .claim("nombre", user.getUsername())       // Nombre del usuario
                 .claim("rol", user.getRol().name())     // Rol del usuario como string
-                
+
                 // Timestamps: cuándo fue emitido y cuándo expira
                 .setIssuedAt(new Date())                                    // Fecha/hora actual
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration)) // Fecha de expiración
-                
+
                 // Firma: asegura la integridad del token
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)       // Algoritmo HMAC-SHA512
-                
+
                 // Construye y retorna el token final como string
                 .compact();
     }
 
     /**
      * Verifica si un token JWT sigue siendo válido (no ha expirado)
-     * 
+     *
      * @param token Token JWT a verificar
      * @return true si el token es válido, false si ha expirado
      */
@@ -96,7 +87,7 @@ public class JwtService {
 
     /**
      * Extrae el subject (número de teléfono) del token JWT
-     * 
+     *
      * @param token Token JWT del cual extraer el subject
      * @return String número de teléfono del usuario
      */
@@ -108,7 +99,7 @@ public class JwtService {
     /**
      * Método principal de validación que verifica firma y extrae el subject
      * Combina validación de integridad con extracción de datos
-     * 
+     *
      * @param token Token JWT a validar
      * @return String subject (número de teléfono) si el token es válido
      * @throws io.jsonwebtoken.JwtException si la firma es inválida o el token está expirado
@@ -122,7 +113,7 @@ public class JwtService {
     /**
      * Método genérico privado para extraer cualquier claim del token
      * Permite reutilizar código para diferentes tipos de claims
-     * 
+     *
      * @param token Token JWT del cual extraer el claim
      * @param claimsResolver Función que especifica qué claim extraer
      * @return T el valor del claim solicitado
@@ -137,7 +128,7 @@ public class JwtService {
     /**
      * Método privado que extrae todos los claims del token JWT
      * Realiza la validación de firma automáticamente
-     * 
+     *
      * @param token Token JWT a parsear
      * @return Claims objeto con todos los claims del token
      * @throws io.jsonwebtoken.JwtException si la firma es inválida
@@ -155,7 +146,7 @@ public class JwtService {
 
     /**
      * Método privado que extrae específicamente la fecha de expiración del token
-     * 
+     *
      * @param token Token JWT del cual extraer la fecha de expiración
      * @return Date fecha de expiración del token
      */

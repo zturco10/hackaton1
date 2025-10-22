@@ -10,12 +10,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  */
 @Configuration // Indica que esta clase contiene definiciones de beans de Spring
 public class AppConfig {
-    
+
     /**
      * Bean que proporciona el encoder para cifrar contraseñas
      * BCrypt es un algoritmo de hash seguro diseñado específicamente para contraseñas
      * Incluye un "salt" aleatorio y es resistente a ataques de fuerza bruta
-     * 
+     *
      * @return BCryptPasswordEncoder configurado para cifrar/verificar contraseñas
      */
     @Bean // Registra este método como un bean en el contexto de Spring

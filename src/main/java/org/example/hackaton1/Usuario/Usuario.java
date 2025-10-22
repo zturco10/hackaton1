@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,12 +21,25 @@ public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String numero;
-    private String contrasena;
+
     private boolean activo = true;
     private LocalDateTime fechaRegistro;
-    private String nombre;
-    private Rol rol;
+
+    @NotBlank
+    private String username;
+
+    @NotBlank
+    @Email
+    private String email;
+
+    @NotBlank
+    private String password;
+
+    @NotBlank
+    private Rol rol; // "CENTRAL" o "BRANCH"
+
+    // opcional para role == "BRANCH"
+    private String branch;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -33,13 +48,9 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getPassword() {
-        return contrasena;
+        return password;
     }
 
-    @Override
-    public String getUsername() {
-        return numero;
-    }
 
     @Override
     public boolean isAccountNonExpired() {

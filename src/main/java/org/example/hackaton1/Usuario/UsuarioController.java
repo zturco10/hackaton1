@@ -15,9 +15,9 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CLIENTE')")
+    @PreAuthorize("hasAnyRole('CENTRAL,BRANCH')")
     @GetMapping("/user/me")
     public UsuarioResponse getCurrentUser(@AuthenticationPrincipal Usuario usuario) {
-        return new UsuarioResponse(usuario.getId(), usuario.getNombre(), usuario.getNumero());
+        return new UsuarioResponse(usuario.getId(), usuario.getUsername(), usuario.getEmail());
     }
 }

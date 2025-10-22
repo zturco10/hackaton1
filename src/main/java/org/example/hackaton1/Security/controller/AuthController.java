@@ -34,35 +34,35 @@ public class AuthController {
     /**
      * Endpoint para registrar un nuevo usuario en el sistema
      * Acepta datos del usuario en formato UsuarioDTO y retorna un token JWT
-     * 
+     *
      * @param usuarioDTO Datos del usuario a registrar (número, contraseña, nombre, etc.)
      * @return ResponseEntity con token JWT si el registro es exitoso
      */
     @PostMapping("/register") // Maneja peticiones POST a /api/auth/register
     public ResponseEntity<?> register(@Valid @RequestBody UsuarioDTO usuarioDTO) {
-            // Delega la lógica de registro al servicio de autenticación
-            // El servicio se encarga de validar datos, cifrar contraseña y crear usuario
-            JwtAuthenticationResponse tokenResponse = authenticationService.register(usuarioDTO);
-            
-            // Retorna respuesta HTTP 200 OK con el token JWT
-            return ResponseEntity.ok(tokenResponse);
+        // Delega la lógica de registro al servicio de autenticación
+        // El servicio se encarga de validar datos, cifrar contraseña y crear usuario
+        JwtAuthenticationResponse tokenResponse = authenticationService.register(usuarioDTO);
+
+        // Retorna respuesta HTTP 200 OK con el token JWT
+        return ResponseEntity.ok(tokenResponse);
     }
 
     /**
      * Endpoint para iniciar sesión con credenciales de usuario
      * Valida número de teléfono y contraseña, retorna token JWT si son válidas
-     * 
+     *
      * @param signinRequest Objeto con número y contraseña del usuario
      * @return ResponseEntity con token JWT si las credenciales son válidas, 401 si no
      */
     @PostMapping("/login") // Maneja peticiones POST a /api/auth/login
     public ResponseEntity<?> login(@RequestBody SigninRequest signinRequest) {
-            // Delega la autenticación al servicio
-            // El servicio verifica credenciales y genera token si son correctas
-            JwtAuthenticationResponse response = authenticationService.signin(signinRequest);
-            
-            // Retorna respuesta HTTP 200 OK con el token JWT
-            return ResponseEntity.ok(response);
+        // Delega la autenticación al servicio
+        // El servicio verifica credenciales y genera token si son correctas
+        JwtAuthenticationResponse response = authenticationService.signin(signinRequest);
+
+        // Retorna respuesta HTTP 200 OK con el token JWT
+        return ResponseEntity.ok(response);
     }
 
 
