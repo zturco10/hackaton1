@@ -13,11 +13,11 @@ import java.util.Optional;
  * Proporciona métodos personalizados para consultas específicas de tokens
  */
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
-
+    
     /**
      * Busca un token de restablecimiento que coincida con el token dado y que no haya sido usado
      * Este método es crucial para validar tokens de restablecimiento de contraseña
-     *
+     * 
      * @param token El string del token a buscar
      * @return Optional<PasswordResetToken> Token encontrado o vacío si no existe o ya fue usado
      */

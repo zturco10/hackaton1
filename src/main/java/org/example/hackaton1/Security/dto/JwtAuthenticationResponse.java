@@ -11,7 +11,7 @@ import lombok.Data;
 @Data // Genera getters, setters, toString, equals y hashCode automáticamente
 @AllArgsConstructor // Genera constructor que acepta todos los campos como parámetros
 public class JwtAuthenticationResponse {
-
+    
     /**
      * Token JWT que contiene la información del usuario autenticado
      * Este token debe ser enviado en el header "Authorization: Bearer <token>"

@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor // Genera constructor sin argumentos (requerido por JPA)
 @AllArgsConstructor // Genera constructor con todos los argumentos
 public class PasswordResetToken {
-
+    
     // Identificador único del token en la base de datos
     @Id // Marca este campo como clave primaria
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-incremento en la BD
@@ -27,10 +27,10 @@ public class PasswordResetToken {
 
     // El token único que se envía al usuario (generalmente un UUID o string aleatorio)
     private String token;
-
+    
     // Fecha y hora cuando el token expira (después de esta fecha es inválido)
     private LocalDateTime expiryDate;
-
+    
     // Bandera que indica si el token ya fue utilizado (evita reutilización)
     private boolean used;
 
