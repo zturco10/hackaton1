@@ -34,9 +34,13 @@ public class JwtService {
      * @return Key objeto clave para firmar/verificar tokens JWT
      */
     private Key getSigningKey() {
-        // Convierte la clave secreta en bytes y crea una clave HMAC-SHA
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        byte[] keyBytes = jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("JWT secret demasiado corto. Debe ser >= 32 bytes");
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
     }
+
 
     /**
      * Genera un token JWT completo basado en los datos del usuario
@@ -48,11 +52,16 @@ public class JwtService {
      */
     public String generateToken(Usuario user) {
         // Validación exhaustiva para evitar errores durante la generación del token
-        if (user == null || user.getNumero() == null || user.getId() == null || 
-            user.getNombre() == null || user.getRol() == null) {
+        // antes: if (user == null || user.getNumero() == null | user.getId() == null || ...)
+        if (user == null
+                || user.getNumero() == null
+                || user.getId() == null
+                || user.getNombre() == null
+                || user.getRol() == null) {
             throw new IllegalArgumentException("Usuario o campos requeridos nulos para generar el token");
         }
-        
+
+
         // Construcción del token JWT usando el patrón Builder
         return Jwts.builder()
                 // Subject: identificador principal del usuario (número de teléfono)
