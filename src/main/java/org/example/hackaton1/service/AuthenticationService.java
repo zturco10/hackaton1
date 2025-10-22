@@ -1,4 +1,4 @@
-package org.example.hackaton1.Security.service;
+package org.example.hackaton1.service;
 
 
 
@@ -9,7 +9,6 @@ import org.example.hackaton1.Usuario.Rol;
 import org.example.hackaton1.Usuario.Usuario;
 import org.example.hackaton1.Usuario.UsuarioDTO;
 import org.example.hackaton1.Usuario.UsuarioRepository;
-import org.example.hackaton1.config.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
