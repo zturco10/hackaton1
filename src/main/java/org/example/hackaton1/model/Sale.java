@@ -5,21 +5,31 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name="sales")
-public class Sale {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String sku;
-    private Integer units;
-    private Double price;
-    private String branch;
-    private Instant soldAt;
-    private String createdBy;
-    private Instant createdAt = Instant.now();
 
+@Entity
+@Table(name = "sales")
+public class Sale {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String sku;
+
+    private Integer quantity;
+
+    private Double totalAmount;
+
+    private LocalDate date;
+
+    private String branch;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }

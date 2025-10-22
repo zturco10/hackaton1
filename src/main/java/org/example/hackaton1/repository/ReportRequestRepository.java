@@ -1,4 +1,7 @@
 package org.example.hackaton1.repository;
 
-public class ReportRequestRepository {
+import org.example.hackaton1.model.ReportRequestEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ReportRequestRepository extends JpaRepository<ReportRequestEntity, String> {
 }

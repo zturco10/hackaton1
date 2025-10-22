@@ -6,18 +6,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="report_requests")
+@Table(name = "report_requests")
 public class ReportRequestEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String requestId;
-    private String status;
-    private Instant requestedAt = Instant.now();
-    private String requestedBy;
-    // + fields like fromDate, toDate, branch, emailTo
+
+    private String branch;
+
+    private LocalDateTime requestDate;
+
+    private String email;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }

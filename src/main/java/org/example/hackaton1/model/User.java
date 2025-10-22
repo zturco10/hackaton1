@@ -7,21 +7,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"username"}), @UniqueConstraint(columnNames = {"email"})
-})
+@Table(name = "users")
 public class User {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String username;
-    private String email;
-    private String password; // hashed
-    private String role; // CENTRAL or BRANCH
-    private String branch; // nullable
-    private Instant createdAt = Instant.now();
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String username;
+
+    private String email;
+
+    private String password;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
